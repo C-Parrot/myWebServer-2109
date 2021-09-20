@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
                         close(cur_fd);
                         printf("close client: %d \n", cur_fd);
                     }
-                    else if(str_len<0){//没有数据可读时，read返回1，errno值为EAGAIN
+                    else if(str_len<0){//没有数据可读时，read返回-1，errno值为EAGAIN
                         if(errno==EAGAIN){
                             break;
                         }
