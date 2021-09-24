@@ -12,6 +12,9 @@
 #include <errno.h>
 #include "threadpool.h"
 #include "http_conn.h"
+#include "log.h"
+
+
 #define MAX_FD 65536
 #define MAX_EVENT_NUMBER 10000
 void error_handling(const char *message){
@@ -21,8 +24,12 @@ void error_handling(const char *message){
 }
 
 int main(int argc, char *argv[]){
+
+    Log::get_instance()->init("./ServerLog", 0, 2000, 800000, 0);//初始化日志
+
     if(argc != 2){
         printf("Usage: %s <port>\n", argv[0]);
+        LOG_ERROR("%s", "epoll failure");
         return 1;
     }
 
@@ -31,6 +38,7 @@ int main(int argc, char *argv[]){
         pool = new threadpool<http_conn>;
     }
     catch(...){
+        LOG_ERROR("%s", "create threadpoll failure");
         return 1;
     }
 
@@ -86,6 +94,11 @@ int main(int argc, char *argv[]){
                     close(clnt_sock);
                     continue;
                 }
+
+                char ip[16] = {0};
+                inet_ntop(AF_INET, &clnt_addr.sin_addr ,ip, sizeof(ip));
+                LOG_INFO("client(%s) is connected", ip);
+
                 users[clnt_sock].init( clnt_sock, clnt_addr);
             }
             else if( events[i].events & EPOLLRDHUP) {//如果对端异常断开
