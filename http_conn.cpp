@@ -12,7 +12,7 @@ int http_conn::m_epollfd = -1;
 const char* doc_root = "/home/dahling/tcpcoding/resources";
 
 // 初始化连接,外部调用初始化套接字地址
-void http_conn::init(int sockfd, const sockaddr_in& addr){
+void http_conn::init(int sockfd, const sockaddr_in& addr, int timeslot){
     m_sockfd = sockfd;
     m_address = addr;
     
@@ -29,6 +29,13 @@ void http_conn::init(int sockfd, const sockaddr_in& addr){
     fcntl(m_sockfd, F_SETFL, flag | O_NONBLOCK);
 
     m_user_count++;
+
+    timer = new util_timer;
+    timer->user_data = this;
+    time_t cur = time( NULL );
+    timer->expire = cur + 3 * timeslot;
+
+
     init();
 }
 
@@ -61,6 +68,7 @@ void http_conn::close_conn() {
         close(m_sockfd);
         m_sockfd = -1;
         m_user_count--; // 关闭一个连接，将客户总数量-1
+        timer = nullptr;
     }
 }
 

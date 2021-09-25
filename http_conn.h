@@ -7,22 +7,20 @@
 #include <sys/mman.h>
 #include <stdarg.h>
 #include <sys/uio.h>
+#include "timer.h"
 
+class util_timer;
 
 class http_conn{
-    
 public:
-
     http_conn(){};
     ~http_conn(){};
 
-    void init(int sockfd, const sockaddr_in &addr);
+    void init(int sockfd, const sockaddr_in &addr, int timeslot);
     void close_conn();  // 关闭连接
     bool read();// 读数据，非阻塞
     void process();//处理请求，业务逻辑
     bool write();// 响应，非阻塞
-
-
 
     static int m_epollfd;
     static int m_user_count; // 记录有多少个用户
@@ -58,6 +56,7 @@ public:
     CLOSED_CONNECTION   :   表示客户端已经关闭连接了*/
     enum HTTP_CODE { NO_REQUEST, GET_REQUEST, BAD_REQUEST, NO_RESOURCE, FORBIDDEN_REQUEST, FILE_REQUEST, INTERNAL_ERROR, CLOSED_CONNECTION };
     
+    util_timer* timer;          // 定时器
 
 
 private:
